@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>Document</title>
+</head>
+<body>
+<script>
+Array.prototype.splice=function(start,deleteCount){
+    var max=Math.max,
+        min=Math.min,
+        delta,//偏移量
+        element,
+        insertCount=max(arguments.length-2,0),//排除掉arguments参数中,start,deleteCount,剩余是待插入元素
+        k=0,
+        len=this.length,//对array调用时，this指向当前数组
+        new_len,
+        result=[],//返回数组
+        shift_count;//需移位的数量
+        
+    start = start || 0;//start默认值为0
+    if(start<0) start+=len;//start<0时，从数组后端开始
+    start=max(min(start,len),0);//经过处理，0<=start<=len
+    deleteCount=typeof deleteCount === 'number' ? deleteCount : len;//deleteCount默认值是len
+    deleteCount=min(deleteCount,len-start);//deleteCount<=可删除数量
+    deleteCount=max(deleteCount,0);//0<=deleteCount<=可删除数量
+    
+    delta=insertCount-deleteCount;
+    new_len=len+delta;
+    
+    //获取删除元素
+    while(k<deleteCount){
+        element=this[start+k];
+        if(element!=undefined){
+            result[k]=element;
+        }
+        k +=1;
+    }
+    shift_count=len-start-deleteCount;
+    //待插入数量小于删除数量，原数组后续元素依次向左偏移
+    if(delta<0){
+        k=start+insertCount;//从start至start+insertCount留给待插入元素
+        while(shift_count){
+            this[k]=this[k-delta];
+            k+=1;
+            shift_count-=1;
+        }
+        this.length=new_len;
+    }
+    //待插入数量大于删除数量，原数组后续元素依次向右偏移
+    else if(delta>0){
+        k=1;
+        while(shift_count){
+            this[new_len-k]=this[len-k];
+            k+1;
+            shift_count-=1;
+        }
+        //this.length=new_len;非必须，因给一开始this[new_len-k]赋值时，length属性已经自动设置为数组最后元素下标值
+    }
+    //delta===0 时，待插入数量等于删除数量，无需偏移
+    
+    //最后将待插入元素插入原数组
+    for(k=0;k<insertCount;k+=1){
+        this[start+k]=arguments[k+2];//排除掉arguments参数中start和deleteCount
+    }
+    return result;
+};
+</script>
+</body>
+</html>
