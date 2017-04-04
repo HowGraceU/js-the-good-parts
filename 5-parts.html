@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>Document</title>
+</head>
+<body>
+<div id="a" style="width: 100px; height: 100px; background: red;"></div>
+<script>
+var eventuality = function (that) {
+	var registry = {};
+
+	that.fire = function (event) {
+		var array,
+			func,
+			handler,
+			i,
+			type = typeof event === 'string'? event: event.type;
+
+		if(registry.hasOwnProperty(type)){
+			array = registry[type];
+			var len = array.length;
+
+			for(var i = 0; i < len; i += 1){
+				handler = array[i];
+				func = handler.method;
+				if(typeof func === 'string'){
+					func = this[func];
+				}
+				func.apply(this, [event, handler.parameters]);
+			}
+		}
+
+		return this;
+	}
+
+	that.on = function (type, method, parameters) {
+		var handler = {
+			method: method,
+			parameters: parameters
+		};
+
+		if(registry.hasOwnProperty(type)){
+			registry[type].push(handler);
+		} else {
+			registry[type] = [handler]
+		}
+		return this;
+	}
+	return that;
+}
+var div = document.getElementById('a'),
+	a = 1;
+eventuality(div);
+div.on('click', function (event, a, b) {
+	console.log(1, event, a, b)
+}, a);
+div.onclick = function (event) {
+	div.fire(event);
+};
+</script>
+</body>
+</html>
